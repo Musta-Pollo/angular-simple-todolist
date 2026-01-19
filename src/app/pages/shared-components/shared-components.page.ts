@@ -244,7 +244,7 @@ import { ZardEmptyComponent } from '@/shared/components/empty';
         <div class="space-y-6 max-w-md">
           <div>
             <h3 class="text-lg font-medium mb-3">Input Sizes</h3>
-            <div class="space-y-3">
+            <div class="flex flex-col space-y-3">
               <input z-input zSize="sm" placeholder="Small input" />
               <input z-input zSize="default" placeholder="Default input" />
               <input z-input zSize="lg" placeholder="Large input" />
@@ -253,7 +253,7 @@ import { ZardEmptyComponent } from '@/shared/components/empty';
 
           <div>
             <h3 class="text-lg font-medium mb-3">Input States</h3>
-            <div class="space-y-3">
+            <div class="flex flex-col space-y-3">
               <input z-input placeholder="Normal input" />
               <input z-input zStatus="error" placeholder="Error state" />
               <input z-input zStatus="success" placeholder="Success state" />
@@ -363,7 +363,7 @@ import { ZardEmptyComponent } from '@/shared/components/empty';
         <div class="space-y-6 max-w-md">
           <div>
             <h3 class="text-lg font-medium mb-3">Progress Values</h3>
-            <div class="space-y-3">
+            <div class="flex flex-col space-y-3">
               <z-progress-bar [progress]="25" />
               <z-progress-bar [progress]="50" />
               <z-progress-bar [progress]="75" />
@@ -373,7 +373,7 @@ import { ZardEmptyComponent } from '@/shared/components/empty';
 
           <div>
             <h3 class="text-lg font-medium mb-3">Progress Types</h3>
-            <div class="space-y-3">
+            <div class="flex flex-col space-y-3">
               <z-progress-bar [progress]="60" zType="default" />
               <z-progress-bar [progress]="60" zType="destructive" />
               <z-progress-bar [progress]="60" zType="accent" />
@@ -382,7 +382,7 @@ import { ZardEmptyComponent } from '@/shared/components/empty';
 
           <div>
             <h3 class="text-lg font-medium mb-3">Progress Sizes</h3>
-            <div class="space-y-3">
+            <div class="flex flex-col space-y-3">
               <z-progress-bar [progress]="60" zSize="sm" />
               <z-progress-bar [progress]="60" zSize="default" />
               <z-progress-bar [progress]="60" zSize="lg" />

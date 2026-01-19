@@ -12,7 +12,11 @@ interface PriorityOption {
 }
 
 const ALL_OPTION: PriorityOption = { value: 'all', label: 'All', dotColor: '' };
-const NONE_OPTION: PriorityOption = { value: 'none', label: 'None', dotColor: 'bg-muted-foreground' };
+const NONE_OPTION: PriorityOption = {
+  value: 'none',
+  label: 'None',
+  dotColor: 'bg-muted-foreground',
+};
 
 const BASE_PRIORITIES: PriorityOption[] = [
   { value: 'high', label: 'High', dotColor: 'bg-red-500' },
@@ -25,16 +29,16 @@ const BASE_PRIORITIES: PriorityOption[] = [
   standalone: true,
   imports: [ZardBadgeComponent],
   template: `
-    <div class="flex flex-wrap gap-2">
+    <div class="flex flex-wrap gap-3">
       @for (p of priorities(); track p.value) {
         <z-badge
           [zType]="value() === p.value ? 'default' : 'outline'"
           zShape="pill"
-          class="cursor-pointer gap-1.5 px-3 py-1"
+          class="cursor-pointer gap-2 px-3 py-2 text-sm"
           (click)="select(p.value)"
         >
           @if (p.dotColor) {
-            <span [class]="'w-2 h-2 rounded-full shrink-0 ' + p.dotColor"></span>
+            <span [class]="'w-3 h-3 rounded-full shrink-0 ' + p.dotColor"></span>
           }
           {{ p.label }}
         </z-badge>

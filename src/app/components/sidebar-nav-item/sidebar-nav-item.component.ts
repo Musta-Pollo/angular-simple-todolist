@@ -1,6 +1,6 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
-import { ZardIconComponent, ZardIcon } from '@/shared/components/icon';
+import { ZardIcon, ZardIconComponent } from '@/shared/components/icon';
 import { ZardTooltipImports } from '@/shared/components/tooltip';
 
 @Component({
@@ -31,8 +31,9 @@ export class SidebarNavItemComponent {
   readonly clicked = output<void>();
 
   protected readonly classes = computed(() => {
-    const base = 'flex items-center w-full text-sm font-medium rounded-md transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
-    const spacing = this.collapsed() ? 'justify-center p-2' : 'gap-3 px-3 py-2';
+    const base =
+      'flex items-center w-full text-sm font-medium rounded-md transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+    const spacing = this.collapsed() ? 'justify-center p-3' : 'gap-3 px-4 py-3';
 
     if (this.active()) {
       return `${base} ${spacing} bg-accent text-accent-foreground`;

@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "angular-simple-todolist": {
+    "taskflow": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -22,7 +22,8 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/favicon.svg"
             ],
             "styles": [
               "src/styles.css"
@@ -56,10 +57,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "angular-simple-todolist:build:production"
+              "buildTarget": "taskflow:build:production"
             },
             "development": {
-              "buildTarget": "angular-simple-todolist:build:development"
+              "buildTarget": "taskflow:build:development"
             }
           },
           "defaultConfiguration": "development"

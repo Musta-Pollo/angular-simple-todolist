@@ -50,7 +50,7 @@ import { ZardMenuDirective, ZardMenuContentDirective, ZardMenuItemDirective, Zar
 
           <div>
             <h3 class="text-lg font-medium mb-3">Breadcrumb Sizes</h3>
-            <div class="space-y-3">
+            <div class="flex flex-col space-y-3">
               <z-breadcrumb zSize="sm">
                 <z-breadcrumb-item [routerLink]="['/']">Home</z-breadcrumb-item>
                 <z-breadcrumb-item [routerLink]="['/components']">Components</z-breadcrumb-item>

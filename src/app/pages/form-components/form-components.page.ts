@@ -71,7 +71,7 @@ import { ZardCardComponent } from '@/shared/components/card';
 
           <div>
             <h3 class="text-lg font-medium mb-3">Select Sizes</h3>
-            <div class="space-y-3">
+            <div class="flex flex-col space-y-3">
               <z-select zPlaceholder="Small select..." zSize="sm">
                 <z-select-item zValue="1">Option 1</z-select-item>
                 <z-select-item zValue="2">Option 2</z-select-item>

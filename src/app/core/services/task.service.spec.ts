@@ -209,8 +209,8 @@ describe('TaskService', () => {
       expect(tasks[2].title).toBe('Apple');
     });
 
-    it('should sort by priority (high first)', async () => {
-      const tasks = await firstValueFrom(service.watchTasks({ sortBy: 'priority', ascending: true }));
+    it('should sort by priority descending (high first)', async () => {
+      const tasks = await firstValueFrom(service.watchTasks({ sortBy: 'priority', ascending: false }));
       expect(tasks[0].priority).toBe('high');
       expect(tasks[1].priority).toBe('medium');
       expect(tasks[2].priority).toBe('low');

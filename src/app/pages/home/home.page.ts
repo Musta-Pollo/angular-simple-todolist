@@ -1,6 +1,7 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 import { map, switchMap } from 'rxjs';
 
 import { AppLogoComponent } from '@/components/app-logo';
@@ -20,10 +21,12 @@ import type { SortBy, Task, TasksFilter, ViewType } from '@/core/models';
 import { TaskService } from '@/core/services';
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardDialogService } from '@/shared/components/dialog';
+import { ZardDividerComponent } from '@/shared/components/divider';
 import { ZardIconComponent, type ZardIcon } from '@/shared/components/icon';
 import { ResponsiveModalService } from '@/shared/components/responsive-modal';
 import { Z_SHEET_DATA, ZardSheetRef, ZardSheetService } from '@/shared/components/sheet';
 import { ZardTooltipImports } from '@/shared/components/tooltip';
+import { AutoAnimateDirective } from '@/shared/core/directives/auto-animate.directive';
 
 type ScreenSize = 'mobile' | 'tablet' | 'desktop';
 
@@ -45,8 +48,10 @@ interface NavItem {
     EmptyTasksComponent,
     FloatingActionButtonComponent,
     ZardButtonComponent,
+    ZardDividerComponent,
     ZardIconComponent,
     ZardTooltipImports,
+    AutoAnimateDirective,
   ],
   template: `
     <div class="flex h-screen bg-background">
@@ -69,13 +74,13 @@ interface NavItem {
           <!-- Add Task Button -->
           @if (screenSize() === 'desktop') {
             <button z-button class="w-full mb-6" (click)="openCreateModal()">
-              <z-icon zType="plus" class="mr-2 h-4 w-4" />
+              <z-icon zType="plus" class="mr-2 h-4 w-4" zSize="lg" />
               Add Task
             </button>
           } @else {
             <button
               z-button
-              zType="outline"
+              zSize="lg"
               class="w-full mb-6 p-2"
               [zTooltip]="'Add Task'"
               zTooltipPosition="right"
@@ -97,6 +102,34 @@ interface NavItem {
               />
             }
           </nav>
+
+          <!-- Dev Link -->
+          <!-- TODO: Remove in production or hide under DEV flag -->
+          <div class="mt-auto">
+            <z-divider class="my-4" />
+            @if (screenSize() === 'desktop') {
+              <button
+                z-button
+                zType="ghost"
+                class="w-full justify-start gap-3"
+                (click)="openDevPage()"
+              >
+                <z-icon zType="code" class="h-4 w-4" />
+                Dev
+              </button>
+            } @else {
+              <button
+                z-button
+                zType="ghost"
+                class="w-full p-2"
+                [zTooltip]="'Dev'"
+                zTooltipPosition="right"
+                (click)="openDevPage()"
+              >
+                <z-icon zType="code" class="h-4 w-4" />
+              </button>
+            }
+          </div>
         </aside>
       }
 
@@ -121,13 +154,16 @@ interface NavItem {
             [(filterState)]="filterState"
           />
 
-          <div class="space-y-1">
+          <div class="space-y-1" autoAnimate>
             @for (task of tasks(); track task.id) {
               <app-task-card
                 [title]="task.title"
                 [deadline]="task.deadline"
                 [priority]="task.priority"
                 [completed]="task.completed"
+                [isMobile]="screenSize() === 'mobile'"
+                [showActions]="activeTaskId() === task.id"
+                (showActionsChange)="onTaskActionsChange(task.id, $event)"
                 (toggle)="toggleTask(task)"
                 (edit)="openEditModal(task)"
                 (delete)="confirmDelete(task)"
@@ -149,36 +185,6 @@ interface NavItem {
         <app-fab icon="plus" (clicked)="openCreateModal()" />
       }
     </div>
-
-    <!-- Mobile Navigation Drawer Template -->
-    <ng-template #mobileNavTemplate>
-      <div class="flex flex-col h-full">
-        <div class="flex items-center justify-between border-b px-0 py-3">
-          <app-logo />
-          <button z-button zType="ghost" zSize="sm" (click)="closeMobileNav()">
-            <z-icon zType="x" class="h-5 w-5" />
-          </button>
-        </div>
-
-        <div class="px-0 pt-2">
-          <button z-button class="w-full mb-4" (click)="openCreateModal(); closeMobileNav()">
-            <z-icon zType="plus" class="mr-2 h-4 w-4" />
-            Add Task
-          </button>
-
-          <nav class="space-y-1">
-            @for (item of navItems; track item.id) {
-              <app-sidebar-nav-item
-                [icon]="item.icon"
-                [label]="item.label"
-                [active]="activeView() === item.id"
-                (clicked)="activeView.set(item.id); closeMobileNav()"
-              />
-            }
-          </nav>
-        </div>
-      </div>
-    </ng-template>
   `,
 })
 export class HomePage {
@@ -187,6 +193,7 @@ export class HomePage {
   private readonly dialogService = inject(ZardDialogService);
   private readonly sheetService = inject(ZardSheetService);
   private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly router = inject(Router);
 
   private mobileNavRef: { close: () => void } | null = null;
 
@@ -209,6 +216,8 @@ export class HomePage {
 
   readonly activeView = signal<ViewType>('all');
   readonly searchQuery = signal('');
+  /** Tracks which task has visible actions on mobile (tap-to-reveal) */
+  readonly activeTaskId = signal<string | null>(null);
   readonly filterState = signal<FilterState>({
     priority: 'all',
     sortBy: 'dateCreated',
@@ -363,6 +372,11 @@ export class HomePage {
     this.taskService.editTask({ ...task, completed: !task.completed });
   }
 
+  onTaskActionsChange(taskId: string, show: boolean) {
+    // If showing actions for this task, set it as active; otherwise clear
+    this.activeTaskId.set(show ? taskId : null);
+  }
+
   private readonly defaultFilterState: FilterState = {
     priority: 'all',
     sortBy: 'dateCreated',
@@ -381,6 +395,10 @@ export class HomePage {
   private hasActiveFilters(): boolean {
     const current = this.filterState();
     return current.priority !== 'all';
+  }
+
+  openDevPage() {
+    this.router.navigate(['/dev']);
   }
 }
 

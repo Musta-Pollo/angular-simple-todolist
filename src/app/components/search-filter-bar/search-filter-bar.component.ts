@@ -20,7 +20,7 @@ const DEFAULT_FILTER_STATE: FilterState = {
       <div class="relative flex-1">
         <z-icon
           zType="search"
-          class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+          class="absolute left-2 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
         />
         <input
           z-input
@@ -29,7 +29,7 @@ const DEFAULT_FILTER_STATE: FilterState = {
           [placeholder]="placeholder()"
           [value]="searchValue()"
           (input)="onSearchInput($event)"
-          class="w-full pl-12"
+          class="w-full pl-12 text-base"
         />
       </div>
 

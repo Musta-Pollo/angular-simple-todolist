@@ -1,11 +1,14 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
 
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardDividerComponent } from '@/shared/components/divider';
 import { ZardDropdownImports } from '@/shared/components/dropdown';
 import { ZardIconComponent, type ZardIcon } from '@/shared/components/icon';
 import { ZardMenuLabelComponent } from '@/shared/components/menu';
-import { ZardToggleGroupComponent, type ZardToggleGroupItem } from '@/shared/components/toggle-group';
+import {
+  ZardToggleGroupComponent,
+  type ZardToggleGroupItem,
+} from '@/shared/components/toggle-group';
 
 import { PrioritySelectorComponent } from '@/components/priority-selector';
 import type { FilterPriority, SortBy } from '@/core/models';
@@ -37,9 +40,9 @@ interface SortOption {
   template: `
     <z-dropdown-menu [class]="'w-56'" align="end">
       <button dropdown-trigger z-button zType="outline" zSize="lg" class="gap-2">
-        <z-icon zType="list-filter-plus" class="h-4 w-4" />
-        <span class="hidden sm:inline">Filter</span>
-        <z-icon zType="chevron-down" class="h-4 w-4 hidden sm:block" />
+        <z-icon zType="list-filter-plus" class="h-5 w-5" />
+        <span class="hidden sm:inline text-base">Filter</span>
+        <z-icon zType="chevron-down" class="h-5 w-5 hidden sm:block" />
       </button>
 
       <!-- Priority Section -->
@@ -68,10 +71,10 @@ interface SortOption {
               class="w-full justify-start gap-3 font-normal"
               (click)="selectSortBy(s.value); $event.stopPropagation()"
             >
-              <z-icon [zType]="s.icon" class="h-4 w-4 text-muted-foreground" />
+              <z-icon [zType]="s.icon" class="h-5 w-5 text-muted-foreground" />
               <span class="flex-1 text-left">{{ s.label }}</span>
               @if (state().sortBy === s.value) {
-                <z-icon zType="check" class="h-4 w-4 text-primary" />
+                <z-icon zType="check" class="h-5 w-5 text-primary" />
               }
             </button>
           }
@@ -86,7 +89,7 @@ interface SortOption {
         <z-toggle-group
           zMode="single"
           zType="outline"
-          zSize="sm"
+          zSize="md"
           [items]="sortOrderItems"
           [value]="state().descending ? 'desc' : 'asc'"
           (valueChange)="setSortOrder($event)"
@@ -101,7 +104,7 @@ interface SortOption {
           type="button"
           z-button
           zType="ghost"
-          zSize="sm"
+          zSize="default"
           class="w-full text-muted-foreground hover:text-foreground"
           (click)="resetFilters()"
         >
@@ -125,6 +128,12 @@ export class FilterDropdownComponent {
     sortBy: 'dateCreated',
     descending: true,
   });
+
+  constructor() {
+    effect(() => {
+      this.state.set(this.initialState());
+    });
+  }
 
   readonly sortOptions: SortOption[] = [
     { value: 'dateCreated', label: 'Date Created', icon: 'calendar' },
@@ -155,11 +164,7 @@ export class FilterDropdownComponent {
   }
 
   resetFilters() {
-    this.state.set({
-      priority: 'all',
-      sortBy: 'dateCreated',
-      descending: true,
-    });
+    this.state.set(this.initialState());
     this.filterChange.emit(this.state());
   }
 }

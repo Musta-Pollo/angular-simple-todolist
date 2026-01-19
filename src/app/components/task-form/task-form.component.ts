@@ -2,13 +2,13 @@ import { Component, computed, effect, inject, input, output, signal } from '@ang
 
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardDatePickerComponent } from '@/shared/components/date-picker';
-import { ZardDialogHeaderComponent } from '@/shared/components/dialog-header';
 import { Z_MODAL_DATA, ZardDialogRef } from '@/shared/components/dialog';
+import { ZardDialogHeaderComponent } from '@/shared/components/dialog-header';
 import { ZardInputDirective } from '@/shared/components/input';
 import { Z_SHEET_DATA, ZardSheetRef } from '@/shared/components/sheet';
 
-import type { FilterPriority, TaskPriority } from '@/core/models';
 import { PrioritySelectorComponent } from '@/components/priority-selector';
+import type { FilterPriority, TaskPriority } from '@/core/models';
 
 export interface TaskFormValue {
   name: string;
@@ -32,37 +32,41 @@ const EMPTY_FORM: TaskFormValue = {
 @Component({
   selector: 'app-task-form',
   standalone: true,
-  imports: [ZardButtonComponent, ZardDialogHeaderComponent, ZardInputDirective, ZardDatePickerComponent, PrioritySelectorComponent],
+  imports: [
+    ZardButtonComponent,
+    ZardDialogHeaderComponent,
+    ZardInputDirective,
+    ZardDatePickerComponent,
+    PrioritySelectorComponent,
+  ],
   template: `
     <z-dialog-header [zTitle]="formTitle()" (close)="onClose()" />
 
     <!-- Form Content -->
     <div class="py-6 space-y-6">
       <!-- Name -->
-      <div class="space-y-2">
-        <label class="text-sm font-medium">Name<span class="text-destructive">*</span></label>
+      <div class="space-y-3 flex flex-col">
+        <label class="text-base font-medium">Name<span class="text-destructive">*</span></label>
         <input
           z-input
           type="text"
           placeholder="What needs to be done?"
           [value]="formValue().name"
           (input)="updateName($event)"
-          class="w-full"
+          class="w-full text-base"
+          zSize="lg"
         />
       </div>
 
       <!-- Priority -->
-      <div class="space-y-2">
-        <label class="text-sm font-medium">Priority</label>
-        <app-priority-selector
-          [value]="formValue().priority"
-          (valueChange)="setPriority($event)"
-        />
+      <div class="flex flex-col space-y-3">
+        <label class="text-base font-medium">Priority</label>
+        <app-priority-selector [value]="formValue().priority" (valueChange)="setPriority($event)" />
       </div>
 
       <!-- Deadline -->
-      <div class="space-y-2 flex flex-col">
-        <label class="text-sm font-medium">Deadline</label>
+      <div class="space-y-3 flex flex-col">
+        <label class="text-base font-medium">Deadline</label>
         <z-date-picker
           [value]="formValue().deadline"
           placeholder="dd.mm.yyyy"
@@ -75,9 +79,9 @@ const EMPTY_FORM: TaskFormValue = {
     </div>
 
     <!-- Footer -->
-    <div class="flex items-center justify-end gap-3 pt-4 border-t">
-      <button z-button zType="ghost" (click)="onCancel()">Cancel</button>
-      <button z-button [disabled]="!isValid()" (click)="onConfirm()">
+    <div class="flex items-center justify-end gap-4 pt-4 border-t">
+      <button z-button zType="ghost" zSize="lg" (click)="onCancel()">Cancel</button>
+      <button z-button zSize="lg" [disabled]="!isValid()" (click)="onConfirm()">
         {{ confirmLabel() }}
       </button>
     </div>
@@ -145,17 +149,18 @@ export class TaskFormComponent {
 
   protected updateName(event: Event) {
     const value = (event.target as HTMLInputElement).value;
-    this.formValue.update(f => ({ ...f, name: value }));
+    this.formValue.update((f) => ({ ...f, name: value }));
   }
 
   protected setPriority(priority: FilterPriority) {
+    // Cast is safe since PrioritySelector doesn't include 'all' option in this form
     if (priority !== 'all') {
-      this.formValue.update(f => ({ ...f, priority }));
+      this.formValue.update((f) => ({ ...f, priority: priority as TaskPriority }));
     }
   }
 
   protected setDeadline(date: Date | null) {
-    this.formValue.update(f => ({ ...f, deadline: date }));
+    this.formValue.update((f) => ({ ...f, deadline: date }));
   }
 
   protected onClose() {

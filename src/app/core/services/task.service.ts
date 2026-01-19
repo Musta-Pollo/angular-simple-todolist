@@ -28,13 +28,9 @@ export class TaskService {
   }
 
   editTask(task: Task): void {
-    const tasks = this.tasks$.getValue();
-    const index = tasks.findIndex((t) => t.id === task.id);
-    if (index !== -1) {
-      tasks[index] = task;
-      this.tasks$.next([...tasks]);
-      this.save();
-    }
+    const updated = this.tasks$.getValue().map((t) => (t.id === task.id ? task : t));
+    this.tasks$.next(updated);
+    this.save();
   }
 
   deleteTask(taskId: string): void {
@@ -139,7 +135,8 @@ export class TaskService {
           break;
 
         case 'priority':
-          comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
+          // ascending = none → low → medium → high, descending = high → medium → low → none
+          comparison = priorityOrder[b.priority] - priorityOrder[a.priority];
           break;
 
         case 'deadline':
