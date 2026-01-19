@@ -1,8 +1,14 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, model } from '@angular/core';
 
 import { FilterDropdownComponent, type FilterState } from '@/components/filter-dropdown';
 import { ZardIconComponent } from '@/shared/components/icon';
 import { ZardInputDirective } from '@/shared/components/input';
+
+const DEFAULT_FILTER_STATE: FilterState = {
+  priority: 'all',
+  sortBy: 'dateCreated',
+  descending: true,
+};
 
 @Component({
   selector: 'app-search-filter-bar',
@@ -27,36 +33,18 @@ import { ZardInputDirective } from '@/shared/components/input';
       </div>
 
       <!-- Filter Dropdown -->
-      <app-filter-dropdown [initialState]="filterState()" (filterChange)="onFilterChange($event)" />
+      <app-filter-dropdown [initialState]="filterState()" (filterChange)="filterState.set($event)" />
     </div>
   `,
 })
 export class SearchFilterBarComponent {
   readonly placeholder = input('Search tasks...');
-  readonly initialFilterState = input<FilterState>({
-    priority: 'all',
-    sortBy: 'date-created',
-    descending: true,
-  });
 
-  readonly searchChange = output<string>();
-  readonly filterChange = output<FilterState>();
-
-  readonly searchValue = signal('');
-  readonly filterState = signal<FilterState>({
-    priority: 'all',
-    sortBy: 'date-created',
-    descending: true,
-  });
+  readonly searchValue = model('');
+  readonly filterState = model<FilterState>(DEFAULT_FILTER_STATE);
 
   onSearchInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.searchValue.set(value);
-    this.searchChange.emit(value);
-  }
-
-  onFilterChange(filter: FilterState) {
-    this.filterState.set(filter);
-    this.filterChange.emit(filter);
   }
 }

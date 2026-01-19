@@ -3,12 +3,10 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 import { ZardBadgeComponent } from '@/shared/components/badge';
 
-import { type TaskPriority } from '@/components/task-card';
-
-export type PriorityValue = TaskPriority | 'all';
+import type { FilterPriority } from '@/core/models';
 
 interface PriorityOption {
-  value: PriorityValue;
+  value: FilterPriority;
   label: string;
   dotColor: string;
 }
@@ -52,7 +50,7 @@ const BASE_PRIORITIES: PriorityOption[] = [
   ],
 })
 export class PrioritySelectorComponent implements ControlValueAccessor {
-  readonly value = model<PriorityValue>('none');
+  readonly value = model<FilterPriority>('none');
   readonly disabled = input(false);
   readonly includeAll = input(false);
   readonly includeNone = input(true);
@@ -73,10 +71,10 @@ export class PrioritySelectorComponent implements ControlValueAccessor {
     return options;
   });
 
-  private onChange: (value: PriorityValue) => void = () => {};
+  private onChange: (value: FilterPriority) => void = () => {};
   private onTouched: () => void = () => {};
 
-  select(priority: PriorityValue) {
+  select(priority: FilterPriority) {
     if (this.disabled()) return;
 
     this.value.set(priority);
@@ -84,11 +82,11 @@ export class PrioritySelectorComponent implements ControlValueAccessor {
     this.onTouched();
   }
 
-  writeValue(value: PriorityValue): void {
+  writeValue(value: FilterPriority): void {
     this.value.set(value ?? 'none');
   }
 
-  registerOnChange(fn: (value: PriorityValue) => void): void {
+  registerOnChange(fn: (value: FilterPriority) => void): void {
     this.onChange = fn;
   }
 

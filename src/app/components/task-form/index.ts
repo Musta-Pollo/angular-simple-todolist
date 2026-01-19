@@ -1,1 +1,1 @@
-export { TaskFormComponent, type TaskFormValue } from './task-form.component';
+export { TaskFormComponent, type TaskFormValue, type TaskFormData } from './task-form.component';

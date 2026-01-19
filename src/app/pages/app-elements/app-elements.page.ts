@@ -180,8 +180,8 @@ interface NavItem {
           <div class="p-4">
             <h3 class="text-sm font-medium text-muted-foreground mb-4">Preview</h3>
             <app-search-filter-bar
-              (searchChange)="onSearchChange($event)"
-              (filterChange)="onFilterChange($event)"
+              [(searchValue)]="searchQuery"
+              [(filterState)]="currentFilter"
             />
           </div>
         </z-card>
@@ -367,18 +367,15 @@ export class AppElementsPage {
   readonly modalService = inject(ResponsiveModalService);
 
   activeNavItem = signal('inbox');
+  searchQuery = signal('');
   currentFilter = signal<FilterState>({
     priority: 'all',
-    sortBy: 'date-created',
+    sortBy: 'dateCreated',
     descending: true,
   });
 
   onFilterChange(filter: FilterState) {
     this.currentFilter.set(filter);
-  }
-
-  onSearchChange(search: string) {
-    console.log('Search:', search);
   }
 
   sampleTasks: Task[] = [

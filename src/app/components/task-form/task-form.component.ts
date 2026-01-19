@@ -3,18 +3,23 @@ import { Component, computed, effect, inject, input, output, signal } from '@ang
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardDatePickerComponent } from '@/shared/components/date-picker';
 import { ZardDialogHeaderComponent } from '@/shared/components/dialog-header';
-import { ZardDialogRef } from '@/shared/components/dialog/dialog-ref';
+import { Z_MODAL_DATA, ZardDialogRef } from '@/shared/components/dialog';
 import { ZardInputDirective } from '@/shared/components/input';
-import { ZardSheetRef } from '@/shared/components/sheet/sheet-ref';
+import { Z_SHEET_DATA, ZardSheetRef } from '@/shared/components/sheet';
 
-import { type TaskPriority } from '@/components/task-card';
-import { PrioritySelectorComponent, type PriorityValue } from '@/components/priority-selector';
+import type { FilterPriority, TaskPriority } from '@/core/models';
+import { PrioritySelectorComponent } from '@/components/priority-selector';
 
 export interface TaskFormValue {
   name: string;
   priority: TaskPriority;
   deadline: Date | null;
   isCompleted: boolean;
+}
+
+export interface TaskFormData {
+  mode?: 'create' | 'edit';
+  initialValue?: Partial<TaskFormValue>;
 }
 
 const EMPTY_FORM: TaskFormValue = {
@@ -81,6 +86,8 @@ const EMPTY_FORM: TaskFormValue = {
 export class TaskFormComponent {
   private readonly sheetRef = inject(ZardSheetRef, { optional: true });
   private readonly dialogRef = inject(ZardDialogRef, { optional: true });
+  private readonly sheetData = inject<TaskFormData>(Z_SHEET_DATA, { optional: true });
+  private readonly dialogData = inject<TaskFormData>(Z_MODAL_DATA, { optional: true });
 
   readonly initialValue = input<Partial<TaskFormValue>>();
   readonly mode = input<'create' | 'edit'>('create');
@@ -90,24 +97,48 @@ export class TaskFormComponent {
   readonly confirm = output<TaskFormValue>();
 
   protected readonly formValue = signal<TaskFormValue>({ ...EMPTY_FORM });
+  protected readonly formMode = signal<'create' | 'edit'>('create');
 
   protected readonly formTitle = computed(() => {
-    return this.mode() === 'create' ? 'New Task' : 'Edit Task';
+    return this.formMode() === 'create' ? 'New Task' : 'Edit Task';
   });
 
   protected readonly confirmLabel = computed(() => {
-    return this.mode() === 'create' ? 'Create Task' : 'Save Changes';
+    return this.formMode() === 'create' ? 'Create Task' : 'Save Changes';
   });
 
   protected readonly isValid = computed(() => {
     return this.formValue().name.trim().length > 0;
   });
 
+  private readonly hasInjectedData: boolean;
+
   constructor() {
+    // Initialize from injected modal data (takes precedence)
+    const injectedData = this.sheetData ?? this.dialogData;
+    this.hasInjectedData = !!injectedData;
+
+    if (injectedData) {
+      if (injectedData.mode) {
+        this.formMode.set(injectedData.mode);
+      }
+      if (injectedData.initialValue) {
+        this.formValue.set({ ...EMPTY_FORM, ...injectedData.initialValue });
+      }
+    }
+
+    // Watch input changes for non-modal usage only
     effect(() => {
       const initial = this.initialValue();
-      if (initial) {
+      if (initial && !this.hasInjectedData) {
         this.formValue.set({ ...EMPTY_FORM, ...initial });
+      }
+    });
+
+    effect(() => {
+      const inputMode = this.mode();
+      if (inputMode && !this.hasInjectedData) {
+        this.formMode.set(inputMode);
       }
     });
   }
@@ -117,8 +148,10 @@ export class TaskFormComponent {
     this.formValue.update(f => ({ ...f, name: value }));
   }
 
-  protected setPriority(priority: PriorityValue) {
-    this.formValue.update(f => ({ ...f, priority: priority as TaskPriority }));
+  protected setPriority(priority: FilterPriority) {
+    if (priority !== 'all') {
+      this.formValue.update(f => ({ ...f, priority }));
+    }
   }
 
   protected setDeadline(date: Date | null) {

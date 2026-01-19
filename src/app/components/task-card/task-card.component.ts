@@ -1,5 +1,6 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 
+import { formatDeadline } from '@/core/utils';
 import type { TaskPriority } from '@/core/models';
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardIconComponent } from '@/shared/components/icon';
@@ -113,36 +114,7 @@ export class TaskCardComponent {
     return `${base} text-foreground`;
   });
 
-  protected readonly formattedDeadline = computed(() => {
-    const deadline = this.deadline();
-    if (!deadline) return '';
-
-    const date = typeof deadline === 'string' ? new Date(deadline) : deadline;
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const isTomorrow = date.toDateString() === tomorrow.toDateString();
-
-    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-    if (isToday) {
-      return `Today - ${timeStr}`;
-    }
-    if (isTomorrow) {
-      return `Tomorrow - ${timeStr}`;
-    }
-
-    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-    const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (diffDays > 0 && diffDays <= 7) {
-      return `This ${dayName} - ${timeStr}`;
-    }
-
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ` - ${timeStr}`;
-  });
+  protected readonly formattedDeadline = computed(() => formatDeadline(this.deadline()));
 
   onToggle() {
     this.toggle.emit();

@@ -6,13 +6,11 @@ import { ZardDropdownImports } from '@/shared/components/dropdown';
 import { ZardIconComponent, type ZardIcon } from '@/shared/components/icon';
 import { ZardMenuLabelComponent } from '@/shared/components/menu';
 
-import { PrioritySelectorComponent, type PriorityValue } from '@/components/priority-selector';
-
-export type Priority = 'all' | 'high' | 'medium' | 'low';
-export type SortBy = 'date-created' | 'priority' | 'deadline' | 'alphabetical';
+import { PrioritySelectorComponent } from '@/components/priority-selector';
+import type { FilterPriority, SortBy } from '@/core/models';
 
 export interface FilterState {
-  priority: Priority;
+  priority: FilterPriority;
   sortBy: SortBy;
   descending: boolean;
 }
@@ -119,7 +117,7 @@ interface SortOption {
 export class FilterDropdownComponent {
   readonly initialState = input<FilterState>({
     priority: 'all',
-    sortBy: 'date-created',
+    sortBy: 'dateCreated',
     descending: true,
   });
 
@@ -127,19 +125,19 @@ export class FilterDropdownComponent {
 
   readonly state = signal<FilterState>({
     priority: 'all',
-    sortBy: 'date-created',
+    sortBy: 'dateCreated',
     descending: true,
   });
 
   readonly sortOptions: SortOption[] = [
-    { value: 'date-created', label: 'Date Created', icon: 'calendar' },
+    { value: 'dateCreated', label: 'Date Created', icon: 'calendar' },
     { value: 'priority', label: 'Priority', icon: 'layers' },
     { value: 'deadline', label: 'Deadline', icon: 'calendar' },
     { value: 'alphabetical', label: 'Alphabetical', icon: 'file-text' },
   ];
 
-  selectPriority(priority: PriorityValue) {
-    this.state.update(s => ({ ...s, priority: priority as Priority }));
+  selectPriority(priority: FilterPriority) {
+    this.state.update(s => ({ ...s, priority }));
     this.filterChange.emit(this.state());
   }
 
@@ -156,7 +154,7 @@ export class FilterDropdownComponent {
   resetFilters() {
     this.state.set({
       priority: 'all',
-      sortBy: 'date-created',
+      sortBy: 'dateCreated',
       descending: true,
     });
     this.filterChange.emit(this.state());
