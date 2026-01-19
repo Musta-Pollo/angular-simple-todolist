@@ -1,18 +1,9 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 
+import type { TaskPriority } from '@/core/models';
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardIconComponent } from '@/shared/components/icon';
 import { ZardTooltipImports } from '@/shared/components/tooltip';
-
-export type TaskPriority = 'high' | 'medium' | 'low' | 'none';
-
-export interface Task {
-  id: string;
-  title: string;
-  deadline?: Date | string;
-  priority: TaskPriority;
-  completed: boolean;
-}
 
 @Component({
   selector: 'app-task-card',

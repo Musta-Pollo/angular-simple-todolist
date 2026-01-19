@@ -388,6 +388,7 @@ export class AppElementsPage {
       deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       priority: 'high',
       completed: false,
+      dateCreated: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
     },
     {
       id: '2',
@@ -395,6 +396,7 @@ export class AppElementsPage {
       deadline: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
       priority: 'medium',
       completed: false,
+      dateCreated: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
     },
     {
       id: '3',
@@ -402,8 +404,9 @@ export class AppElementsPage {
       deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       priority: 'low',
       completed: false,
+      dateCreated: new Date(),
     },
-    { id: '4', title: 'Code review completed', priority: 'high', completed: true },
+    { id: '4', title: 'Code review completed', priority: 'high', completed: true, dateCreated: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
   ];
 
   toggleTask(id: string) {

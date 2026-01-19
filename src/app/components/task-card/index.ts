@@ -1,1 +1,2 @@
-export { TaskCardComponent, type Task, type TaskPriority } from './task-card.component';
+export { TaskCardComponent } from './task-card.component';
+export type { Task, TaskPriority } from '@/core/models';
