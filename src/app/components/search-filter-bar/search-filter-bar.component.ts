@@ -25,15 +25,19 @@ const DEFAULT_FILTER_STATE: FilterState = {
         <input
           z-input
           type="text"
+          zSize="lg"
           [placeholder]="placeholder()"
           [value]="searchValue()"
           (input)="onSearchInput($event)"
-          class="pl-12 w-full"
+          class="w-full pl-12"
         />
       </div>
 
       <!-- Filter Dropdown -->
-      <app-filter-dropdown [initialState]="filterState()" (filterChange)="filterState.set($event)" />
+      <app-filter-dropdown
+        [initialState]="filterState()"
+        (filterChange)="filterState.set($event)"
+      />
     </div>
   `,
 })

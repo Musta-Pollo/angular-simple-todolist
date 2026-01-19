@@ -1,6 +1,7 @@
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs';
+import { map, switchMap } from 'rxjs';
 
 import { AppLogoComponent } from '@/components/app-logo';
 import {
@@ -9,6 +10,7 @@ import {
 } from '@/components/delete-confirmation';
 import { EmptyTasksComponent } from '@/components/empty-tasks';
 import { type FilterState } from '@/components/filter-dropdown';
+import { FloatingActionButtonComponent } from '@/components/floating-action-button';
 import { SearchFilterBarComponent } from '@/components/search-filter-bar';
 import { SidebarNavItemComponent } from '@/components/sidebar-nav-item';
 import { TaskCardComponent } from '@/components/task-card';
@@ -20,6 +22,10 @@ import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardDialogService } from '@/shared/components/dialog';
 import { ZardIconComponent, type ZardIcon } from '@/shared/components/icon';
 import { ResponsiveModalService } from '@/shared/components/responsive-modal';
+import { Z_SHEET_DATA, ZardSheetRef, ZardSheetService } from '@/shared/components/sheet';
+import { ZardTooltipImports } from '@/shared/components/tooltip';
+
+type ScreenSize = 'mobile' | 'tablet' | 'desktop';
 
 interface NavItem {
   id: ViewType;
@@ -37,70 +43,169 @@ interface NavItem {
     SearchFilterBarComponent,
     TaskCardComponent,
     EmptyTasksComponent,
+    FloatingActionButtonComponent,
     ZardButtonComponent,
     ZardIconComponent,
+    ZardTooltipImports,
   ],
   template: `
     <div class="flex h-screen bg-background">
-      <!-- Sidebar -->
-      <aside class="w-64 border-r flex flex-col p-4">
-        <app-logo class="mb-6" />
-
-        <button z-button class="w-full mb-6" (click)="openCreateModal()">
-          <z-icon zType="plus" class="mr-2 h-4 w-4" />
-          Add Task
-        </button>
-
-        <nav class="space-y-1">
-          @for (item of navItems; track item.id) {
-            <app-sidebar-nav-item
-              [icon]="item.icon"
-              [label]="item.label"
-              [active]="activeView() === item.id"
-              (clicked)="activeView.set(item.id)"
-            />
+      <!-- Desktop/Tablet Sidebar -->
+      @if (screenSize() !== 'mobile') {
+        <aside
+          class="border-r flex flex-col p-4 transition-all duration-300"
+          [class.w-64]="screenSize() === 'desktop'"
+          [class.w-16]="screenSize() === 'tablet'"
+        >
+          <!-- Logo -->
+          @if (screenSize() === 'desktop') {
+            <app-logo class="mb-6" />
+          } @else {
+            <div class="flex justify-center mb-6">
+              <app-logo [compact]="true" />
+            </div>
           }
-        </nav>
-      </aside>
+
+          <!-- Add Task Button -->
+          @if (screenSize() === 'desktop') {
+            <button z-button class="w-full mb-6" (click)="openCreateModal()">
+              <z-icon zType="plus" class="mr-2 h-4 w-4" />
+              Add Task
+            </button>
+          } @else {
+            <button
+              z-button
+              zType="outline"
+              class="w-full mb-6 p-2"
+              [zTooltip]="'Add Task'"
+              zTooltipPosition="right"
+              (click)="openCreateModal()"
+            >
+              <z-icon zType="plus" class="h-4 w-4" />
+            </button>
+          }
+
+          <!-- Navigation -->
+          <nav class="space-y-1">
+            @for (item of navItems; track item.id) {
+              <app-sidebar-nav-item
+                [icon]="item.icon"
+                [label]="item.label"
+                [active]="activeView() === item.id"
+                [collapsed]="screenSize() === 'tablet'"
+                (clicked)="activeView.set(item.id)"
+              />
+            }
+          </nav>
+        </aside>
+      }
 
       <!-- Main Content -->
-      <main class="flex-1 flex flex-col p-6 overflow-auto">
-        <app-task-list-header [title]="viewTitle()" [count]="tasks().length" />
+      <main class="flex-1 flex flex-col overflow-auto">
+        <!-- Mobile Header -->
+        @if (screenSize() === 'mobile') {
+          <header class="flex items-center gap-3 p-4 border-b bg-background sticky top-0 z-10">
+            <button z-button zType="ghost" zSize="sm" class="p-2" (click)="openMobileNav()">
+              <z-icon zType="panel-left" class="h-5 w-5" />
+            </button>
+            <app-logo [compact]="true" />
+          </header>
+        }
 
-        <app-search-filter-bar
-          class="my-4"
-          [(searchValue)]="searchQuery"
-          [(filterState)]="filterState"
-        />
+        <div class="flex-1 p-4 md:p-6">
+          <app-task-list-header class="block pb-4" [title]="viewTitle()" [count]="tasks().length" />
 
-        <div class="space-y-1">
-          @for (task of tasks(); track task.id) {
-            <app-task-card
-              [title]="task.title"
-              [deadline]="task.deadline"
-              [priority]="task.priority"
-              [completed]="task.completed"
-              (toggle)="toggleTask(task)"
-              (edit)="openEditModal(task)"
-              (delete)="confirmDelete(task)"
-            />
-          } @empty {
-            <app-empty-tasks
-              [type]="searchQuery() ? 'no-results' : 'no-tasks'"
-              [customTitle]="emptyTitle()"
-              [customDescription]="emptyDescription()"
-              (action)="onEmptyAction()"
-            />
-          }
+          <app-search-filter-bar
+            class="my-4 pb-2 block"
+            [(searchValue)]="searchQuery"
+            [(filterState)]="filterState"
+          />
+
+          <div class="space-y-1">
+            @for (task of tasks(); track task.id) {
+              <app-task-card
+                [title]="task.title"
+                [deadline]="task.deadline"
+                [priority]="task.priority"
+                [completed]="task.completed"
+                (toggle)="toggleTask(task)"
+                (edit)="openEditModal(task)"
+                (delete)="confirmDelete(task)"
+              />
+            } @empty {
+              <app-empty-tasks
+                [type]="searchQuery() ? 'no-results' : 'no-tasks'"
+                [customTitle]="emptyTitle()"
+                [customDescription]="emptyDescription()"
+                (action)="onEmptyAction()"
+              />
+            }
+          </div>
         </div>
       </main>
+
+      <!-- Mobile FAB -->
+      @if (screenSize() === 'mobile') {
+        <app-fab icon="plus" (clicked)="openCreateModal()" />
+      }
     </div>
+
+    <!-- Mobile Navigation Drawer Template -->
+    <ng-template #mobileNavTemplate>
+      <div class="flex flex-col h-full">
+        <div class="flex items-center justify-between border-b px-0 py-3">
+          <app-logo />
+          <button z-button zType="ghost" zSize="sm" (click)="closeMobileNav()">
+            <z-icon zType="x" class="h-5 w-5" />
+          </button>
+        </div>
+
+        <div class="px-0 pt-2">
+          <button z-button class="w-full mb-4" (click)="openCreateModal(); closeMobileNav()">
+            <z-icon zType="plus" class="mr-2 h-4 w-4" />
+            Add Task
+          </button>
+
+          <nav class="space-y-1">
+            @for (item of navItems; track item.id) {
+              <app-sidebar-nav-item
+                [icon]="item.icon"
+                [label]="item.label"
+                [active]="activeView() === item.id"
+                (clicked)="activeView.set(item.id); closeMobileNav()"
+              />
+            }
+          </nav>
+        </div>
+      </div>
+    </ng-template>
   `,
 })
 export class HomePage {
   private readonly taskService = inject(TaskService);
   private readonly modalService = inject(ResponsiveModalService);
   private readonly dialogService = inject(ZardDialogService);
+  private readonly sheetService = inject(ZardSheetService);
+  private readonly breakpointObserver = inject(BreakpointObserver);
+
+  private mobileNavRef: { close: () => void } | null = null;
+
+  readonly screenSize = toSignal(
+    this.breakpointObserver
+      .observe([Breakpoints.XSmall, Breakpoints.Small, Breakpoints.Medium])
+      .pipe(
+        map((result): ScreenSize => {
+          if (result.breakpoints[Breakpoints.XSmall]) {
+            return 'mobile';
+          }
+          if (result.breakpoints[Breakpoints.Small] || result.breakpoints[Breakpoints.Medium]) {
+            return 'tablet';
+          }
+          return 'desktop';
+        }),
+      ),
+    { initialValue: 'desktop' as ScreenSize },
+  );
 
   readonly activeView = signal<ViewType>('all');
   readonly searchQuery = signal('');
@@ -167,13 +272,39 @@ export class HomePage {
     { initialValue: [] as Task[] },
   );
 
+  openMobileNav() {
+    this.mobileNavRef = this.sheetService.create({
+      zContent: MobileNavComponent,
+      zSide: 'left',
+      zWidth: '280px',
+      zHideFooter: true,
+      zClosable: false,
+      zData: {
+        navItems: this.navItems,
+        activeView: this.activeView,
+        onNavigate: (view: ViewType) => {
+          this.activeView.set(view);
+          this.closeMobileNav();
+        },
+        onCreateTask: () => {
+          this.openCreateModal();
+          this.closeMobileNav();
+        },
+      },
+    });
+  }
+
+  closeMobileNav() {
+    this.mobileNavRef?.close();
+    this.mobileNavRef = null;
+  }
+
   openCreateModal() {
     const ref = this.modalService.open({
       content: TaskFormComponent,
       data: { mode: 'create' },
     });
 
-    // Subscribe to the component's confirm output
     setTimeout(() => {
       const instance = ref.componentInstance as TaskFormComponent;
       instance?.confirm.subscribe((result: TaskFormValue) => {
@@ -197,7 +328,6 @@ export class HomePage {
           priority: task.priority,
           deadline: task.deadline ? new Date(task.deadline) : null,
           isCompleted: task.completed,
-          
         },
       },
     });
@@ -251,5 +381,53 @@ export class HomePage {
   private hasActiveFilters(): boolean {
     const current = this.filterState();
     return current.priority !== 'all';
+  }
+}
+
+// Mobile Navigation Component for Sheet
+@Component({
+  selector: 'app-mobile-nav',
+  standalone: true,
+  imports: [AppLogoComponent, SidebarNavItemComponent, ZardButtonComponent, ZardIconComponent],
+  template: `
+    <div class="flex flex-col h-full">
+      <div class="flex items-center justify-between border-b px-0 py-3">
+        <app-logo />
+        <button z-button zType="ghost" zSize="sm" (click)="close()">
+          <z-icon zType="x" class="h-5 w-5" />
+        </button>
+      </div>
+
+      <div class="px-0 pt-2">
+        <button z-button class="w-full mb-4" (click)="data.onCreateTask()">
+          <z-icon zType="plus" class="mr-2 h-4 w-4" />
+          Add Task
+        </button>
+
+        <nav class="space-y-1">
+          @for (item of data.navItems; track item.id) {
+            <app-sidebar-nav-item
+              [icon]="item.icon"
+              [label]="item.label"
+              [active]="data.activeView() === item.id"
+              (clicked)="data.onNavigate(item.id)"
+            />
+          }
+        </nav>
+      </div>
+    </div>
+  `,
+})
+class MobileNavComponent {
+  readonly sheetRef = inject(ZardSheetRef);
+  readonly data = inject<{
+    navItems: NavItem[];
+    activeView: () => ViewType;
+    onNavigate: (view: ViewType) => void;
+    onCreateTask: () => void;
+  }>(Z_SHEET_DATA);
+
+  close() {
+    this.sheetRef.close();
   }
 }

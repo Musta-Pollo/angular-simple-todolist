@@ -70,6 +70,7 @@ export class ZardDropdownMenuComponent implements OnInit, OnDestroy {
 
   readonly class = input<ClassValue>('');
   readonly disabled = input(false, { transform });
+  readonly align = input<'start' | 'end'>('start');
 
   readonly openChange = output<boolean>();
 
@@ -173,20 +174,21 @@ export class ZardDropdownMenuComponent implements OnInit, OnDestroy {
 
     if (isPlatformBrowser(this.platformId)) {
       try {
+        const alignX = this.align();
         const positionStrategy = this.overlayPositionBuilder
           .flexibleConnectedTo(this.elementRef)
           .withPositions([
             {
-              originX: 'start',
+              originX: alignX,
               originY: 'bottom',
-              overlayX: 'start',
+              overlayX: alignX,
               overlayY: 'top',
               offsetY: 4,
             },
             {
-              originX: 'start',
+              originX: alignX,
               originY: 'top',
-              overlayX: 'start',
+              overlayX: alignX,
               overlayY: 'bottom',
               offsetY: -4,
             },

@@ -11,12 +11,15 @@ import { ZardIconComponent } from '@/shared/components/icon';
       <div [class]="iconContainerClasses()">
         <z-icon zType="check" [class]="iconClasses()" />
       </div>
-      <span [class]="textClasses()">TaskFlow</span>
+      @if (!compact()) {
+        <span [class]="textClasses()">TaskFlow</span>
+      }
     </div>
   `,
 })
 export class AppLogoComponent {
   readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly compact = input(false);
 
   protected readonly containerClasses = computed(() => {
     return 'flex items-center gap-2';

@@ -6,6 +6,7 @@ import {
   type DeleteConfirmationData,
 } from '@/components/delete-confirmation';
 import { EmptyTasksComponent } from '@/components/empty-tasks';
+import { FloatingActionButtonComponent } from '@/components/floating-action-button';
 import { FilterDropdownComponent, type FilterState } from '@/components/filter-dropdown';
 import { SearchFilterBarComponent } from '@/components/search-filter-bar';
 import { SidebarNavItemComponent } from '@/components/sidebar-nav-item';
@@ -40,6 +41,7 @@ interface NavItem {
     EmptyTasksComponent,
     TaskListHeaderComponent,
     TaskFormComponent,
+    FloatingActionButtonComponent,
   ],
   template: `
     <div class="container mx-auto p-8 space-y-12">
@@ -359,6 +361,36 @@ interface NavItem {
           </div>
         </z-card>
       </section>
+
+      <z-divider />
+
+      <!-- Floating Action Button -->
+      <section>
+        <h2 class="text-2xl font-semibold mb-4">Floating Action Button</h2>
+        <z-divider class="mb-6" />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Preview -->
+          <z-card>
+            <div class="p-4">
+              <h3 class="text-sm font-medium text-muted-foreground mb-4">Preview</h3>
+              <div class="flex items-center justify-center p-8">
+                <app-fab icon="plus" (clicked)="onFabClick('default')" />
+              </div>
+            </div>
+          </z-card>
+
+          <!-- With Label -->
+          <z-card>
+            <div class="p-4">
+              <h3 class="text-sm font-medium text-muted-foreground mb-4">With Label</h3>
+              <div class="flex items-center justify-center p-8">
+                <app-fab icon="plus" label="Add Task" (clicked)="onFabClick('with-label')" />
+              </div>
+            </div>
+          </z-card>
+        </div>
+      </section>
     </div>
   `,
 })
@@ -472,5 +504,9 @@ export class AppElementsPage {
       zClosable: false,
       zMaskClosable: true,
     });
+  }
+
+  onFabClick(size: string) {
+    console.log('FAB clicked:', size);
   }
 }
