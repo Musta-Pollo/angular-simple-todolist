@@ -4,7 +4,7 @@ import { EventEmitter, Inject, PLATFORM_ID } from '@angular/core';
 
 import { filter, fromEvent, Subject, takeUntil } from 'rxjs';
 
-import type { ZardDialogComponent, ZardDialogOptions } from './dialog.component';
+import type { OnClickCallback, ZardDialogComponent, ZardDialogOptions } from './dialog.component';
 
 const enum eTriggerAction {
   CANCEL = 'cancel',
@@ -51,6 +51,13 @@ export class ZardDialogRef<T = any, R = any, U = any> {
     this.isClosing = true;
     this.result = result;
 
+    // Invoke zOnOk/zOnCancel callbacks based on result value
+    if (result === true) {
+      this.invokeCallback(this.config.zOnOk);
+    } else if (result === false) {
+      this.invokeCallback(this.config.zOnCancel);
+    }
+
     if (isPlatformBrowser(this.platformId)) {
       const hostElement = this.containerInstance.getNativeElement();
       hostElement.classList.add('dialog-leave');
@@ -69,6 +76,16 @@ export class ZardDialogRef<T = any, R = any, U = any> {
         this.destroy$.complete();
       }
     }, 150);
+  }
+
+  private invokeCallback(callback?: EventEmitter<T> | OnClickCallback<T>) {
+    if (!callback) return;
+
+    if (callback instanceof EventEmitter) {
+      callback.emit(this.getContentComponent());
+    } else if (typeof callback === 'function') {
+      callback(this.getContentComponent());
+    }
   }
 
   private trigger(action: eTriggerAction) {
