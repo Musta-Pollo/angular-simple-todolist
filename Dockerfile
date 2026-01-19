@@ -1,8 +1,12 @@
 # Build stage
 FROM node:22-alpine AS build
 WORKDIR /app
+
+# Limit Node memory to prevent OOM
+ENV NODE_OPTIONS="--max-old-space-size=1024"
+
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --prefer-offline --no-audit --no-fund
 COPY . .
 RUN npm run build
 
