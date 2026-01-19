@@ -90,7 +90,7 @@ export class ZardSheetOptions<T, U> {
       </header>
     }
 
-    <main class="flex w-full flex-col space-y-4">
+    <main class="flex w-full flex-col space-y-4 p-4">
       <ng-template cdkPortalOutlet />
 
       @if (isStringContent) {

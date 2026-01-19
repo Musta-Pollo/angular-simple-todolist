@@ -55,6 +55,16 @@ const HEIGHT_BY_SIZE: Record<NonNullable<ZardButtonSizeVariants>, string> = {
       <span [class]="textClasses()">
         {{ displayText() }}
       </span>
+      @if (zClearable() && value()) {
+        <span
+          class="ml-auto p-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          (click)="onClear($event)"
+          role="button"
+          aria-label="Clear date"
+        >
+          <z-icon zType="x" class="h-4 w-4" />
+        </span>
+      }
     </button>
 
     <ng-template #calendarTemplate>
@@ -102,6 +112,7 @@ export class ZardDatePickerComponent implements ControlValueAccessor {
   readonly minDate = input<Date | null>(null);
   readonly maxDate = input<Date | null>(null);
   readonly disabled = model<boolean>(false);
+  readonly zClearable = input<boolean>(false);
 
   readonly dateChange = output<Date | null>();
 
@@ -146,6 +157,14 @@ export class ZardDatePickerComponent implements ControlValueAccessor {
     this.dateChange.emit(singleDate);
 
     this.popoverDirective().hide();
+  }
+
+  protected onClear(event: Event): void {
+    event.stopPropagation();
+    this.value.set(null);
+    this.onChange(null);
+    this.onTouched();
+    this.dateChange.emit(null);
   }
 
   protected onPopoverVisibilityChange(visible: boolean): void {

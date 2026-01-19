@@ -1,11 +1,12 @@
 import { Component, input, output, signal } from '@angular/core';
 
-import { ZardBadgeComponent } from '@/shared/components/badge';
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardDividerComponent } from '@/shared/components/divider';
 import { ZardDropdownImports } from '@/shared/components/dropdown';
 import { ZardIconComponent, type ZardIcon } from '@/shared/components/icon';
 import { ZardMenuLabelComponent } from '@/shared/components/menu';
+
+import { PrioritySelectorComponent, type PriorityValue } from '@/components/priority-selector';
 
 export type Priority = 'all' | 'high' | 'medium' | 'low';
 export type SortBy = 'date-created' | 'priority' | 'deadline' | 'alphabetical';
@@ -14,12 +15,6 @@ export interface FilterState {
   priority: Priority;
   sortBy: SortBy;
   descending: boolean;
-}
-
-interface PriorityOption {
-  value: Priority;
-  label: string;
-  dotColor: string;
 }
 
 interface SortOption {
@@ -33,10 +28,10 @@ interface SortOption {
   standalone: true,
   imports: [
     ZardButtonComponent,
-    ZardBadgeComponent,
     ZardIconComponent,
     ZardDividerComponent,
     ZardMenuLabelComponent,
+    PrioritySelectorComponent,
     ...ZardDropdownImports,
   ],
   template: `
@@ -48,23 +43,14 @@ interface SortOption {
       </button>
 
       <!-- Priority Section -->
-      <div class="p-3">
+      <div class="p-3" (click)="$event.stopPropagation()">
         <z-menu-label class="text-xs uppercase tracking-wide mb-2 px-0">Priority</z-menu-label>
-        <div class="flex flex-wrap gap-2">
-          @for (p of priorities; track p.value) {
-            <z-badge
-              [zType]="state().priority === p.value ? 'default' : 'outline'"
-              zShape="pill"
-              class="cursor-pointer gap-1.5 px-3 py-1"
-              (click)="selectPriority(p.value); $event.stopPropagation()"
-            >
-              @if (p.dotColor) {
-                <span [class]="'w-2 h-2 rounded-full shrink-0 ' + p.dotColor"></span>
-              }
-              {{ p.label }}
-            </z-badge>
-          }
-        </div>
+        <app-priority-selector
+          [value]="state().priority"
+          [includeAll]="true"
+          [includeNone]="false"
+          (valueChange)="selectPriority($event)"
+        />
       </div>
 
       <z-divider />
@@ -145,13 +131,6 @@ export class FilterDropdownComponent {
     descending: true,
   });
 
-  readonly priorities: PriorityOption[] = [
-    { value: 'all', label: 'All', dotColor: '' },
-    { value: 'high', label: 'High', dotColor: 'bg-red-500' },
-    { value: 'medium', label: 'Medium', dotColor: 'bg-yellow-500' },
-    { value: 'low', label: 'Low', dotColor: 'bg-blue-500' },
-  ];
-
   readonly sortOptions: SortOption[] = [
     { value: 'date-created', label: 'Date Created', icon: 'calendar' },
     { value: 'priority', label: 'Priority', icon: 'layers' },
@@ -159,8 +138,8 @@ export class FilterDropdownComponent {
     { value: 'alphabetical', label: 'Alphabetical', icon: 'file-text' },
   ];
 
-  selectPriority(priority: Priority) {
-    this.state.update(s => ({ ...s, priority }));
+  selectPriority(priority: PriorityValue) {
+    this.state.update(s => ({ ...s, priority: priority as Priority }));
     this.filterChange.emit(this.state());
   }
 

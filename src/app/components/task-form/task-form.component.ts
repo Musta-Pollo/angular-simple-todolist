@@ -1,11 +1,14 @@
-import { Component, computed, input, output, signal, effect } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardDatePickerComponent } from '@/shared/components/date-picker';
-import { ZardIconComponent } from '@/shared/components/icon';
+import { ZardDialogHeaderComponent } from '@/shared/components/dialog-header';
+import { ZardDialogRef } from '@/shared/components/dialog/dialog-ref';
 import { ZardInputDirective } from '@/shared/components/input';
+import { ZardSheetRef } from '@/shared/components/sheet/sheet-ref';
 
 import { type TaskPriority } from '@/components/task-card';
+import { PrioritySelectorComponent, type PriorityValue } from '@/components/priority-selector';
 
 export interface TaskFormValue {
   name: string;
@@ -24,30 +27,15 @@ const EMPTY_FORM: TaskFormValue = {
 @Component({
   selector: 'app-task-form',
   standalone: true,
-  imports: [ZardButtonComponent, ZardIconComponent, ZardInputDirective, ZardDatePickerComponent],
+  imports: [ZardButtonComponent, ZardDialogHeaderComponent, ZardInputDirective, ZardDatePickerComponent, PrioritySelectorComponent],
   template: `
-    <!-- Header -->
-    <div class="flex items-center justify-between pb-4 border-b">
-      <h2 class="text-lg font-semibold">{{ formTitle() }}</h2>
-      <button
-        type="button"
-        z-button
-        zType="ghost"
-        zSize="sm"
-        class="h-8 w-8 p-0"
-        (click)="close.emit()"
-      >
-        <z-icon zType="x" class="h-4 w-4" />
-      </button>
-    </div>
+    <z-dialog-header [zTitle]="formTitle()" (close)="onClose()" />
 
     <!-- Form Content -->
     <div class="py-6 space-y-6">
       <!-- Name -->
       <div class="space-y-2">
-        <label class="text-sm font-medium">
-          Name<span class="text-destructive">*</span>
-        </label>
+        <label class="text-sm font-medium">Name<span class="text-destructive">*</span></label>
         <input
           z-input
           type="text"
@@ -61,27 +49,20 @@ const EMPTY_FORM: TaskFormValue = {
       <!-- Priority -->
       <div class="space-y-2">
         <label class="text-sm font-medium">Priority</label>
-        <div class="flex items-center gap-2">
-          @for (p of priorities; track p.value) {
-            <button
-              type="button"
-              [class]="getPriorityClasses(p.value)"
-              (click)="setPriority(p.value)"
-            >
-              <span [class]="getPriorityDotClasses(p.value)"></span>
-              {{ p.label }}
-            </button>
-          }
-        </div>
+        <app-priority-selector
+          [value]="formValue().priority"
+          (valueChange)="setPriority($event)"
+        />
       </div>
 
       <!-- Deadline -->
-      <div class="space-y-2">
+      <div class="space-y-2 flex flex-col">
         <label class="text-sm font-medium">Deadline</label>
         <z-date-picker
           [value]="formValue().deadline"
           placeholder="dd.mm.yyyy"
           zFormat="dd.MM.yyyy"
+          [zClearable]="true"
           class="w-full"
           (dateChange)="setDeadline($event)"
         />
@@ -90,18 +71,17 @@ const EMPTY_FORM: TaskFormValue = {
 
     <!-- Footer -->
     <div class="flex items-center justify-end gap-3 pt-4 border-t">
-      <button z-button zType="ghost" (click)="cancel.emit()">Cancel</button>
-      <button
-        z-button
-        [disabled]="!isValid()"
-        (click)="onConfirm()"
-      >
+      <button z-button zType="ghost" (click)="onCancel()">Cancel</button>
+      <button z-button [disabled]="!isValid()" (click)="onConfirm()">
         {{ confirmLabel() }}
       </button>
     </div>
   `,
 })
 export class TaskFormComponent {
+  private readonly sheetRef = inject(ZardSheetRef, { optional: true });
+  private readonly dialogRef = inject(ZardDialogRef, { optional: true });
+
   readonly initialValue = input<Partial<TaskFormValue>>();
   readonly mode = input<'create' | 'edit'>('create');
 
@@ -110,13 +90,6 @@ export class TaskFormComponent {
   readonly confirm = output<TaskFormValue>();
 
   protected readonly formValue = signal<TaskFormValue>({ ...EMPTY_FORM });
-
-  protected readonly priorities = [
-    { value: 'high' as TaskPriority, label: 'High' },
-    { value: 'medium' as TaskPriority, label: 'Medium' },
-    { value: 'low' as TaskPriority, label: 'Low' },
-    { value: 'none' as TaskPriority, label: 'None' },
-  ];
 
   protected readonly formTitle = computed(() => {
     return this.mode() === 'create' ? 'New Task' : 'Edit Task';
@@ -144,46 +117,30 @@ export class TaskFormComponent {
     this.formValue.update(f => ({ ...f, name: value }));
   }
 
-  protected setPriority(priority: TaskPriority) {
-    this.formValue.update(f => ({ ...f, priority }));
+  protected setPriority(priority: PriorityValue) {
+    this.formValue.update(f => ({ ...f, priority: priority as TaskPriority }));
   }
 
   protected setDeadline(date: Date | null) {
     this.formValue.update(f => ({ ...f, deadline: date }));
   }
 
-  protected getPriorityClasses(priority: TaskPriority): string {
-    const isSelected = this.formValue().priority === priority;
-    const base = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors border';
-
-    if (isSelected) {
-      const selectedColors: Record<TaskPriority, string> = {
-        high: 'bg-red-50 border-red-200 text-red-700',
-        medium: 'bg-yellow-50 border-yellow-200 text-yellow-700',
-        low: 'bg-blue-50 border-blue-200 text-blue-700',
-        none: 'bg-primary text-primary-foreground border-primary',
-      };
-      return `${base} ${selectedColors[priority]}`;
-    }
-
-    return `${base} bg-background border-border text-foreground hover:bg-accent`;
+  protected onClose() {
+    this.sheetRef?.close();
+    this.dialogRef?.close();
+    this.close.emit();
   }
 
-  protected getPriorityDotClasses(priority: TaskPriority): string {
-    const colors: Record<TaskPriority, string> = {
-      high: 'bg-red-500',
-      medium: 'bg-yellow-500',
-      low: 'bg-blue-500',
-      none: 'bg-muted-foreground',
-    };
-    const isSelected = this.formValue().priority === priority;
-    const selectedNone = priority === 'none' && isSelected;
-
-    return `w-2.5 h-2.5 rounded-full ${selectedNone ? 'bg-primary-foreground' : colors[priority]}`;
+  protected onCancel() {
+    this.sheetRef?.close();
+    this.dialogRef?.close();
+    this.cancel.emit();
   }
 
   protected onConfirm() {
     if (this.isValid()) {
+      this.sheetRef?.close(this.formValue());
+      this.dialogRef?.close(this.formValue());
       this.confirm.emit(this.formValue());
     }
   }
