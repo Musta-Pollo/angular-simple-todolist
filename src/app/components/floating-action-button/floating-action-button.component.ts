@@ -26,7 +26,7 @@ export class FloatingActionButtonComponent {
 
   protected readonly classes = computed(() => {
     const base =
-      'fixed p-3 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-transform hover:scale-105 active:scale-95 cursor-pointer';
+      'fixed p-3 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-green-500 dark:text-white dark:hover:bg-green-600 dark:shadow-green-500/25 transition-transform hover:scale-105 active:scale-95 cursor-pointer';
 
     const positionClasses: Record<FabPosition, string> = {
       'bottom-right': 'bottom-6 right-6',

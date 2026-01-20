@@ -1,4 +1,5 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { TitleCasePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
@@ -29,6 +30,7 @@ import { ZardTooltipImports } from '@/shared/components/tooltip';
 import { AutoAnimateDirective } from '@/shared/core/directives/auto-animate.directive';
 
 type ScreenSize = 'mobile' | 'tablet' | 'desktop';
+type Theme = 'system' | 'light' | 'dark';
 
 interface NavItem {
   id: ViewType;
@@ -40,6 +42,7 @@ interface NavItem {
   selector: 'app-home',
   standalone: true,
   imports: [
+    TitleCasePipe,
     AppLogoComponent,
     SidebarNavItemComponent,
     TaskListHeaderComponent,
@@ -103,11 +106,19 @@ interface NavItem {
             }
           </nav>
 
-          <!-- Dev Link -->
-          <!-- TODO: Remove in production or hide under DEV flag -->
+          <!-- Theme & Dev -->
           <div class="mt-auto">
             <z-divider class="my-4" />
             @if (screenSize() === 'desktop') {
+              <button
+                z-button
+                zType="ghost"
+                class="w-full justify-start gap-3 mb-1"
+                (click)="cycleTheme()"
+              >
+                <z-icon [zType]="themeIcon()" class="h-4 w-4" />
+                {{ theme() | titlecase }}
+              </button>
               <button
                 z-button
                 zType="ghost"
@@ -118,6 +129,16 @@ interface NavItem {
                 Dev
               </button>
             } @else {
+              <button
+                z-button
+                zType="ghost"
+                class="w-full p-2 mb-1"
+                [zTooltip]="theme() | titlecase"
+                zTooltipPosition="right"
+                (click)="cycleTheme()"
+              >
+                <z-icon [zType]="themeIcon()" class="h-4 w-4" />
+              </button>
               <button
                 z-button
                 zType="ghost"
@@ -142,6 +163,9 @@ interface NavItem {
               <z-icon zType="panel-left" class="h-5 w-5" />
             </button>
             <app-logo [compact]="true" />
+            <button z-button zType="ghost" zSize="sm" class="p-2 ml-auto" (click)="cycleTheme()">
+              <z-icon [zType]="themeIcon()" class="h-5 w-5" />
+            </button>
           </header>
         }
 
@@ -218,6 +242,14 @@ export class HomePage {
   readonly searchQuery = signal('');
   /** Tracks which task has visible actions on mobile (tap-to-reveal) */
   readonly activeTaskId = signal<string | null>(null);
+  readonly theme = signal<Theme>(this.getInitialTheme());
+
+  readonly themeIcon = computed<ZardIcon>(() => {
+    const t = this.theme();
+    if (t === 'light') return 'sun';
+    if (t === 'dark') return 'moon';
+    return 'monitor';
+  });
   readonly filterState = signal<FilterState>({
     priority: 'all',
     sortBy: 'dateCreated',
@@ -399,6 +431,26 @@ export class HomePage {
 
   openDevPage() {
     this.router.navigate(['/dev']);
+  }
+
+  private getInitialTheme(): Theme {
+    const stored = localStorage.getItem('theme') as Theme | null;
+    return stored || 'system';
+  }
+
+  cycleTheme() {
+    const order: Theme[] = ['system', 'light', 'dark'];
+    const currentIndex = order.indexOf(this.theme());
+    const nextTheme = order[(currentIndex + 1) % order.length];
+    this.theme.set(nextTheme);
+    this.applyTheme(nextTheme);
+  }
+
+  private applyTheme(theme: Theme) {
+    localStorage.setItem('theme', theme);
+    const isDark =
+      theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', isDark);
   }
 }
 

@@ -52,7 +52,7 @@ import { ZardTooltipImports } from '@/shared/components/tooltip';
           zType="ghost"
           zSize="sm"
           class="h-9 w-9 p-0"
-          [zTooltip]="'Edit'"
+          [zTooltip]="isMobile() ? null : 'Edit'"
           (click)="onEdit(); $event.stopPropagation()"
         >
           <z-icon zType="pencil" class="h-5 w-5 text-muted-foreground" />
@@ -63,7 +63,7 @@ import { ZardTooltipImports } from '@/shared/components/tooltip';
           zType="ghost"
           zSize="sm"
           class="h-9 w-9 p-0"
-          [zTooltip]="'Delete'"
+          [zTooltip]="isMobile() ? null : 'Delete'"
           (click)="onDelete(); $event.stopPropagation()"
         >
           <z-icon zType="trash" class="h-5 w-5 text-muted-foreground hover:text-destructive" />

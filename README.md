@@ -96,6 +96,7 @@ Initially attempted direct build on Coolify, but server resources were insuffici
 | ------------------------ | --------------------------------------------------------------------------- |
 | **List Animations**      | Smooth fade/scale animations when tasks are added, removed, or reordered    |
 | **Mobile Tap-to-Reveal** | On mobile, tap a task card to reveal edit/delete actions (checkbox toggles) |
+| **Dark Theme Support**   | System/Light/Dark theme toggle with localStorage persistence                |
 
 ---
 

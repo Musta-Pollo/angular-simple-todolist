@@ -35,6 +35,8 @@ const BASE_PRIORITIES: PriorityOption[] = [
           [zType]="value() === p.value ? 'default' : 'outline'"
           zShape="pill"
           class="cursor-pointer gap-2 px-3 py-2 text-sm"
+          [class.dark:ring-1]="value() === p.value"
+          [class.dark:ring-white/50]="value() === p.value"
           (click)="select(p.value)"
         >
           @if (p.dotColor) {
