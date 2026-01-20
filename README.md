@@ -58,6 +58,7 @@ Defined the `Task` model and `TaskService` API with a reactive approach:
 - `Task` interface with id, title, completed, priority, deadline, dateCreated
 - `TasksFilter` for view, priority, search, and sorting options
 - Service using `BehaviorSubject` for reactive state with Observable streams
+- Comprehensive unit tests for `TaskService` covering CRUD operations, filtering, and sorting
 
 ### 5. Homepage Implementation
 
@@ -67,16 +68,15 @@ Built the main interface iteratively with manual adjustments for responsiveness 
 
 Initially attempted direct build on Coolify, but server resources were insufficient for the Angular build process. Solution: Created a GitHub Actions workflow to build the Docker image and push to GitHub Container Registry (GHCR), then deployed the pre-built image on Coolify.
 
-### 7. Polish & Testing
+### 7. Polish & Manual Testing
 
-Refined UX details through iterative improvements and ensured quality with tests:
+Refined UX details through iterative improvements:
 
 - Dark theme support with System/Light/Dark toggle and localStorage persistence
 - Theme detection script in `index.html` to prevent flash of wrong theme
 - Mobile-specific interactions (tap-to-reveal actions, hidden tooltips on touch)
 - Visual feedback enhancements (active card highlight, elevated FAB in dark mode)
 - Filter button state indication when filters are active
-- Comprehensive unit tests for `TaskService` covering CRUD operations, filtering, and sorting
 
 ---
 
