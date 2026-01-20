@@ -1,4 +1,4 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardDividerComponent } from '@/shared/components/divider';
@@ -25,6 +25,12 @@ interface SortOption {
   icon: ZardIcon;
 }
 
+const DEFAULT_FILTER_STATE: FilterState = {
+  priority: 'all',
+  sortBy: 'dateCreated',
+  descending: false,
+};
+
 @Component({
   selector: 'app-filter-dropdown',
   standalone: true,
@@ -39,7 +45,17 @@ interface SortOption {
   ],
   template: `
     <z-dropdown-menu [class]="'w-56'" align="end">
-      <button dropdown-trigger z-button zType="outline" zSize="lg" class="gap-2">
+      <button
+        dropdown-trigger
+        z-button
+        zType="outline"
+        zSize="lg"
+        class="gap-2"
+        [class.bg-muted]="isFiltering()"
+        [class.border-primary/50]="isFiltering()"
+        [class.dark:bg-white/15]="isFiltering()"
+        [class.dark:border-white/30]="isFiltering()"
+      >
         <z-icon zType="list-filter-plus" class="h-5 w-5" />
         <span class="hidden sm:inline text-base">Filter</span>
         <z-icon zType="chevron-down" class="h-5 w-5 hidden sm:block" />
@@ -115,19 +131,13 @@ interface SortOption {
   `,
 })
 export class FilterDropdownComponent {
-  readonly initialState = input<FilterState>({
-    priority: 'all',
-    sortBy: 'dateCreated',
-    descending: true,
-  });
+  readonly initialState = input<FilterState>(DEFAULT_FILTER_STATE);
 
   readonly filterChange = output<FilterState>();
 
-  readonly state = signal<FilterState>({
-    priority: 'all',
-    sortBy: 'dateCreated',
-    descending: true,
-  });
+  readonly state = signal<FilterState>(DEFAULT_FILTER_STATE);
+
+  readonly isFiltering = computed(() => this.state().priority !== 'all');
 
   constructor() {
     effect(() => {
@@ -164,7 +174,7 @@ export class FilterDropdownComponent {
   }
 
   resetFilters() {
-    this.state.set(this.initialState());
+    this.state.set(DEFAULT_FILTER_STATE);
     this.filterChange.emit(this.state());
   }
 }
