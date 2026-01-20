@@ -176,6 +176,7 @@ interface NavItem {
             class="my-4 pb-2 block"
             [(searchValue)]="searchQuery"
             [(filterState)]="filterState"
+            [(view)]="activeView"
           />
 
           <div class="space-y-1" autoAnimate>
