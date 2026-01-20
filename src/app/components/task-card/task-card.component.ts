@@ -13,6 +13,7 @@ import { ZardTooltipImports } from '@/shared/components/tooltip';
   template: `
     <div
       [class]="containerClasses()"
+      [class.bg-accent]="actionsVisible()"
       (mouseenter)="hoverActions.set(true)"
       (mouseleave)="hoverActions.set(false)"
     >
@@ -140,10 +141,8 @@ export class TaskCardComponent {
     if (this.isMobile()) {
       // On mobile: request toggling action visibility (parent manages state)
       this.showActionsChange.emit(!this.showActions());
-    } else {
-      // On desktop: toggle task completion
-      this.toggle.emit();
     }
+    // Desktop: no action on card click - use checkbox to toggle
   }
 
   onEdit() {
