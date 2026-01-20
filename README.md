@@ -67,6 +67,17 @@ Built the main interface iteratively with manual adjustments for responsiveness 
 
 Initially attempted direct build on Coolify, but server resources were insufficient for the Angular build process. Solution: Created a GitHub Actions workflow to build the Docker image and push to GitHub Container Registry (GHCR), then deployed the pre-built image on Coolify.
 
+### 7. Polish & Testing
+
+Refined UX details through iterative improvements and ensured quality with tests:
+
+- Dark theme support with System/Light/Dark toggle and localStorage persistence
+- Theme detection script in `index.html` to prevent flash of wrong theme
+- Mobile-specific interactions (tap-to-reveal actions, hidden tooltips on touch)
+- Visual feedback enhancements (active card highlight, elevated FAB in dark mode)
+- Filter button state indication when filters are active
+- Comprehensive unit tests for `TaskService` covering CRUD operations, filtering, and sorting
+
 ---
 
 ## Features
@@ -92,11 +103,13 @@ Initially attempted direct build on Coolify, but server resources were insuffici
 
 ### UX Polish
 
-| Feature                  | Description                                                                 |
-| ------------------------ | --------------------------------------------------------------------------- |
-| **List Animations**      | Smooth fade/scale animations when tasks are added, removed, or reordered    |
-| **Mobile Tap-to-Reveal** | On mobile, tap a task card to reveal edit/delete actions (checkbox toggles) |
-| **Dark Theme Support**   | System/Light/Dark theme toggle with localStorage persistence                |
+| Feature                   | Description                                                              |
+| ------------------------- | ------------------------------------------------------------------------ |
+| **List Animations**       | Smooth fade/scale animations when tasks are added, removed, or reordered |
+| **Mobile Tap-to-Reveal**  | On mobile, tap a task card to reveal edit/delete actions                 |
+| **Active Card Highlight** | Prominent background when task card actions are visible                  |
+| **Checkbox-Only Toggle**  | On desktop, only checkbox toggles completion (not card click)            |
+| **Dark Theme Support**    | System/Light/Dark theme toggle with localStorage persistence             |
 
 ---
 
